@@ -1,23 +1,24 @@
 <resources xmlns:xliff="http://schemas.android.com/apk/res-auto">
 
-    <!-- - - - - - - - - - - - - -->
-    <!-- Used throughout Sunshine-->
-    <!-- - - - - - - - - - - - - -->
-
-    <!--Used in Action Bar, and in AndroidManifest to tell the device the name of this app.-->
-    <!--It's good to keep this short, so your launcher icon isn't displayed with "The greatest Wea"-->
-    <!--or something similar.-->
+    <!-- Used in Action Bar and in AndroidManifest for name of app -->
     <string name="app_name">Brilho do Sol</string>
 
+    <!-- Used in overflow menu to refresh weather data -->
+    <string name="action_refresh">Refresh</string>
+
+    <string name="error_message">
+        An error has occurred. Please check internet and try again.
+    </string>
+
 
     <!-- - - - - - - - - - - - - -->
-    <!--Used by SunshineDateUtils-->
+    <!-- Used by SunshineDateUtils -->
     <!-- - - - - - - - - - - - - -->
 
-    <!-- For labelling today's forecast [CHAR LIMIT=15] -->
+    <!-- Today's forecast [CHAR LIMIT=15] -->
     <string name="today">Today</string>
 
-    <!-- For labelling tomorrow's forecast [CHAR LIMIT=15] -->
+    <!-- Tomorrow's forecast [CHAR LIMIT=15] -->
     <string name="tomorrow">Tomorrow</string>
 
     <!-- Date format [CHAR LIMIT=NONE] -->
@@ -27,7 +28,7 @@
 
 
     <!-- - - - - - - - - - - - - - - -->
-    <!-- Used by SunshineWeatherUtils-->
+    <!-- Used by SunshineWeatherUtils -->
     <!-- - - - - - - - - - - - - - - -->
 
     <!-- Temperature format in Celsius [CHAR LIMIT=5] -->
@@ -109,21 +110,5 @@
     <string name="condition_962">Hurricane</string>
 
     <string name="condition_unknown">Unknown (<xliff:g id="conditionId">%1$d</xliff:g>)</string>
-
-
-    <!-- - - - - - - - - - - -->
-    <!-- Used by NetworkUtils-->
-    <!-- - - - - - - - - - - -->
-    <!--NONE-->
-
-    <!-- - - - - - - - - - - - - - - -->
-    <!-- Used by OpenWeatherJsonUtils-->
-    <!-- - - - - - - - - - - - - - - -->
-    <!--NONE-->
-
-    <!-- - - - - - - - - - - - - - -->
-    <!--Used by SunshinePreferences-->
-    <!-- - - - - - - - - - - - - - -->
-    <!--NONE-->
 
 </resources>
