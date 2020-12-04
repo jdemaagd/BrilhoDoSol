@@ -15,7 +15,8 @@ android {
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
-        resValue("string", "OPEN_WEATHER_MAP_API_KEY", OPEN_WEATHER_MAP_API_KEY)
+        buildConfigField("String", "OWM_API_KEY", OWM_API_KEY)
+        buildConfigField("String", "OWM_BASE_URL", OWM_BASE_URL)
     }
 
     buildTypes {

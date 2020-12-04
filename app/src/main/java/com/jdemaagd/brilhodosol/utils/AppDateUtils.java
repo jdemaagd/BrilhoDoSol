@@ -16,12 +16,10 @@ public final class AppDateUtils {
     public static final long DAY_IN_MILLIS = HOUR_IN_MILLIS * 24;
 
     /**
-     * This method returns the number of days since the epoch (January 01, 1970, 12:00 Midnight UTC)
-     * in UTC time from the current date.
+     * Returns number of days since epoch (January 01, 1970, 12:00 Midnight UTC)
      *
-     * @param date A date in milliseconds in local time.
-     *
-     * @return The number of days in UTC time from the epoch.
+     * @param date A date in milliseconds in local time
+     * @return The number of days in UTC time from the epoch
      */
     public static long getDayNumber(long date) {
         TimeZone tz = TimeZone.getDefault();
@@ -30,51 +28,44 @@ public final class AppDateUtils {
     }
 
     /**
-     * To make it easy to query for the exact date, we normalize all dates that go into
-     * the database to the start of the day in UTC time.
+     * Normalize all dates that go into database to start of day in UTC time
      *
      * @param date The UTC date to normalize
-     *
      * @return The UTC date at 12 midnight
      */
     public static long normalizeDate(long date) {
-        // Normalize the start date to the beginning of the (UTC) day in local time
-        long retValNew = date / DAY_IN_MILLIS * DAY_IN_MILLIS;
-        return retValNew;
+        return date / DAY_IN_MILLIS * DAY_IN_MILLIS;
     }
 
     /**
-     * Since all dates from the database are in UTC, we must convert the given date
-     * (in UTC timezone) to the date in the local timezone. Ths function performs that conversion
-     * using the TimeZone offset.
+     * Convert given date (in UTC timezone) to date in local timezone
      *
-     * @param utcDate The UTC datetime to convert to a local datetime, in milliseconds.
-     * @return The local date (the UTC datetime - the TimeZone offset) in milliseconds.
+     * @param utcDate The UTC datetime to convert to a local datetime, in milliseconds
+     * @return The local date (the UTC datetime - the TimeZone offset) in milliseconds
      */
     public static long getLocalDateFromUTC(long utcDate) {
         TimeZone tz = TimeZone.getDefault();
         long gmtOffset = tz.getOffset(utcDate);
+
         return utcDate - gmtOffset;
     }
 
     /**
-     * Since all dates from the database are in UTC, we must convert the local date to the date in
-     * UTC time. This function performs that conversion using the TimeZone offset.
+     * Convert local date to date in UTC time
      *
-     * @param localDate The local datetime to convert to a UTC datetime, in milliseconds.
-     * @return The UTC date (the local datetime + the TimeZone offset) in milliseconds.
+     * @param localDate The local datetime to convert to a UTC datetime, in milliseconds
+     * @return The UTC date (the local datetime + the TimeZone offset) in milliseconds
      */
     public static long getUTCDateFromLocal(long localDate) {
         TimeZone tz = TimeZone.getDefault();
         long gmtOffset = tz.getOffset(localDate);
+
         return localDate + gmtOffset;
     }
 
     /**
-     * Helper method to convert the database representation of the date into something to display
-     * to users.  As classy and polished a user experience as "20140102" is, we can do better.
+     * Convert database representation of date into something to display to users
      * <p/>
-     * The day string for forecast uses the following logic:
      * For today: "Today, June 8"
      * For tomorrow:  "Tomorrow"
      * For the next 5 days: "Wednesday" (just the day name)
@@ -82,11 +73,8 @@ public final class AppDateUtils {
      *
      * @param context      Context to use for resource localization
      * @param dateInMillis The date in milliseconds (UTC)
-     * @param showFullDate Used to show a fuller-version of the date, which always contains either
-     *                     the day of the week, today, or tomorrow, in addition to the date.
-     *
-     * @return A user-friendly representation of the date such as "Today, June 8", "Tomorrow",
-     * or "Friday"
+     * @param showFullDate Used to show a fuller-version of the date
+     * @return A user-friendly representation of the date
      */
     public static String getFriendlyDateString(Context context, long dateInMillis, boolean showFullDate) {
 
@@ -95,10 +83,7 @@ public final class AppDateUtils {
         long currentDayNumber = getDayNumber(System.currentTimeMillis());
 
         if (dayNumber == currentDayNumber || showFullDate) {
-            /*
-             * If the date we're building the String for is today's date, the format
-             * is "Today, June 24"
-             */
+            // current day format: "Today, June 24"
             String dayName = getDayName(context, localDate);
             String readableDate = getReadableDateString(context, localDate);
             if (dayNumber - currentDayNumber < 2) {
@@ -118,7 +103,7 @@ public final class AppDateUtils {
                 return readableDate;
             }
         } else if (dayNumber < currentDayNumber + 7) {
-            /* If the input date is less than a week in the future, just return the day name. */
+            // date is less than a week format: name of day (i.e. "Tuesday")
             return getDayName(context, localDate);
         } else {
             int flags = DateUtils.FORMAT_SHOW_DATE
@@ -132,11 +117,10 @@ public final class AppDateUtils {
 
     /**
      * Returns a date string in the format specified, which shows a date, without a year,
-     * abbreviated, showing the full weekday.
+     * abbreviated, showing the full weekday
      *
      * @param context      Used by DateUtils to formate the date in the current locale
      * @param timeInMillis Time in milliseconds since the epoch (local time)
-     *
      * @return The formatted date string
      */
     private static String getReadableDateString(Context context, long timeInMillis) {
@@ -148,12 +132,11 @@ public final class AppDateUtils {
     }
 
     /**
-     * Given a day, returns just the name to use for that day.
-     *   E.g "today", "tomorrow", "Wednesday".
+     * Given a day, returns just the name to use for that day
+     * i.e. "today", "tomorrow", "Wednesday"
      *
      * @param context      Context to use for resource localization
      * @param dateInMillis The date in milliseconds (local time)
-     *
      * @return the string day of the week
      */
     private static String getDayName(Context context, long dateInMillis) {
@@ -170,9 +153,10 @@ public final class AppDateUtils {
         } else {
             /*
              * Otherwise, if the day is not today, the format is just the day of the week
-             * (e.g "Wednesday")
+             * (i.e. "Wednesday")
              */
             SimpleDateFormat dayFormat = new SimpleDateFormat("EEEE");
+
             return dayFormat.format(dateInMillis);
         }
     }
