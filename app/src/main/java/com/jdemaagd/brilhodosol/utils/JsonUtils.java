@@ -10,9 +10,9 @@ import org.json.JSONObject;
 
 import java.net.HttpURLConnection;
 
-public final class OpenWeatherJsonUtils {
+public final class JsonUtils {
 
-    private static final String LOG_TAG = OpenWeatherJsonUtils.class.getSimpleName();
+    private static final String LOG_TAG = JsonUtils.class.getSimpleName();
 
     private static final String OWM_DESCRIPTION = "description";
     private static final String OWM_LIST = "list";
