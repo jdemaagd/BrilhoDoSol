@@ -4,22 +4,30 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.jdemaagd.brilhodosol.ForecastAdapter.ForecastAdapterOnClickHandler;
 import com.jdemaagd.brilhodosol.data.AppPreferences;
 import com.jdemaagd.brilhodosol.utils.NetworkUtils;
 import com.jdemaagd.brilhodosol.utils.JsonUtils;
 
 import java.net.URL;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements ForecastAdapterOnClickHandler {
+
+    private static final String LOG_TAG = MainActivity.class.getSimpleName();
 
     private RecyclerView mRecyclerView;
     private ForecastAdapter mForecastAdapter;
@@ -31,9 +39,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mRecyclerView = (RecyclerView) findViewById(R.id.rv_forecast);
+        mRecyclerView = findViewById(R.id.rv_forecast);
 
-        mErrorMessageDisplay = (TextView) findViewById(R.id.tv_error_message_display);
+        mErrorMessageDisplay = findViewById(R.id.tv_error_message_display);
 
         LinearLayoutManager layoutManager
                 = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
@@ -45,12 +53,27 @@ public class MainActivity extends AppCompatActivity {
          */
         mRecyclerView.setHasFixedSize(true);
 
-        mForecastAdapter = new ForecastAdapter();
+        mForecastAdapter = new ForecastAdapter(this);
         mRecyclerView.setAdapter(mForecastAdapter);
 
-        mLoadingIndicator = (ProgressBar) findViewById(R.id.pb_loading_indicator);
+        mLoadingIndicator = findViewById(R.id.pb_loading_indicator);
 
         loadWeatherData();
+    }
+
+    /**
+     * Handle RecyclerView item clicks
+     *
+     * @param weatherForDay The weather for the day that was clicked
+     */
+    @Override
+    public void onClick(String weatherForDay) {
+        Context context = this;
+
+        Class destinationClass = DetailsActivity.class;
+        Intent intentToStartDetailActivity = new Intent(context, destinationClass);
+        intentToStartDetailActivity.putExtra(Intent.EXTRA_TEXT, weatherForDay);
+        startActivity(intentToStartDetailActivity);
     }
 
     @Override
@@ -68,6 +91,12 @@ public class MainActivity extends AppCompatActivity {
         if (id == R.id.action_refresh) {
             mForecastAdapter.setWeatherData(null);
             loadWeatherData();
+
+            return true;
+        }
+
+        if (id == R.id.action_map) {
+            openLocationInMap();
 
             return true;
         }
@@ -128,6 +157,26 @@ public class MainActivity extends AppCompatActivity {
         String location = AppPreferences.getPreferredWeatherLocation(this);
 
         new FetchWeatherTask().execute(location);
+    }
+
+    /**
+     * Use URI scheme for showing a location found on map
+     *
+     * @see <a"http://developer.android.com/guide/components/intents-common.html#Maps">
+     */
+    private void openLocationInMap() {
+        String addressString = "343 South Fifth Avenue, Ann Arbor, MI 48104";
+        Uri geoLocation = Uri.parse("geo:0,0?q=" + addressString);
+
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setData(geoLocation);
+
+        if (intent.resolveActivity(getPackageManager()) != null) {
+            startActivity(intent);
+        } else {
+            Log.d(LOG_TAG, "Could not call " + geoLocation.toString()
+                    + ", no receiving apps installed!");
+        }
     }
 
     /**

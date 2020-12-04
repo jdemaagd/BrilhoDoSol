@@ -3,6 +3,9 @@
     <!-- Used in Action Bar and in AndroidManifest for name of app -->
     <string name="app_name">Brilho do Sol</string>
 
+    <string name="action_map">Map Location</string>
+    <string name="action_share">Share</string>
+
     <!-- Used in overflow menu to refresh weather data -->
     <string name="action_refresh">Refresh</string>
 
