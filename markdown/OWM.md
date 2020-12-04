@@ -1,8 +1,9 @@
 # [Open Weather Map](https://openweathermap.org/api)
 
-## Endpoint
+## Endpoints
 
 - https://api.openweathermap.org/data/2.5/forecast?q=Ann%20Arbor%2C%20MI%2048104&mode=json&units=metric&cnt=14&appid=
+- https://api.openweathermap.org/data/2.5/forecast?lat=42.278210&lon=-83.745670&mode=json&units=metric&cnt=14&appid=app_key=
 
 ## Refresh
 
@@ -16,4 +17,9 @@
 ## Resources
 
 - [OWM API Keys](https://home.openweathermap.org/api_keys)
+
+- [Input Stream](https://stackoverflow.com/questions/309424/how-do-i-read-convert-an-inputstream-into-a-string-in-java)
+- [OkHttp](https://square.github.io/okhttp/)
+- [Open Weather API](https://openweathermap.org/current)
+- [OWM Url]()
 
