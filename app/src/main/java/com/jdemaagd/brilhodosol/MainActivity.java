@@ -1,13 +1,16 @@
 package com.jdemaagd.brilhodosol;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.loader.app.LoaderManager;
+import androidx.loader.app.LoaderManager.LoaderCallbacks;
+import androidx.loader.content.AsyncTaskLoader;
+import androidx.loader.content.Loader;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -16,7 +19,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.jdemaagd.brilhodosol.ForecastAdapter.ForecastAdapterOnClickHandler;
 import com.jdemaagd.brilhodosol.data.AppPreferences;
@@ -25,7 +27,8 @@ import com.jdemaagd.brilhodosol.utils.JsonUtils;
 
 import java.net.URL;
 
-public class MainActivity extends AppCompatActivity implements ForecastAdapterOnClickHandler {
+public class MainActivity extends AppCompatActivity
+        implements ForecastAdapterOnClickHandler, LoaderCallbacks<String[]> {
 
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
 
@@ -33,6 +36,23 @@ public class MainActivity extends AppCompatActivity implements ForecastAdapterOn
     private ForecastAdapter mForecastAdapter;
     private ProgressBar mLoadingIndicator;
     private TextView mErrorMessageDisplay;
+
+    private static final int FORECAST_LOADER_ID = 0;
+
+    /**
+     * Handle RecyclerView item clicks
+     *
+     * @param weatherForDay The weather for the day that was clicked
+     */
+    @Override
+    public void onClick(String weatherForDay) {
+        Context context = this;
+
+        Class destinationClass = DetailsActivity.class;
+        Intent intentToStartDetailActivity = new Intent(context, destinationClass);
+        intentToStartDetailActivity.putExtra(Intent.EXTRA_TEXT, weatherForDay);
+        startActivity(intentToStartDetailActivity);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,22 +78,90 @@ public class MainActivity extends AppCompatActivity implements ForecastAdapterOn
 
         mLoadingIndicator = findViewById(R.id.pb_loading_indicator);
 
-        loadWeatherData();
+        int loaderId = FORECAST_LOADER_ID;
+
+        /*
+         * Implemented LoaderCallbacks interface with type of String array (implements LoaderCallbacks<String[]>)
+         * The variable callback is passed to call to initLoader below
+         * When loaderManager has something to notify, it will do so through this callback
+         */
+        LoaderCallbacks<String[]> callback = MainActivity.this;
+
+        /*
+         * The second parameter of the initLoader method below is a Bundle
+         * Optionally can pass a Bundle to initLoader that can be accessed from within onCreateLoader callback
+         */
+        Bundle bundleForLoader = null;
+
+        // Ensures a loader is initialized and active
+        LoaderManager.getInstance(this).initLoader(loaderId, bundleForLoader, callback);
     }
 
     /**
-     * Handle RecyclerView item clicks
+     * Instantiate and return a new Loader for given ID
      *
-     * @param weatherForDay The weather for the day that was clicked
+     * @param id The ID whose loader is to be created
+     * @param loaderArgs Any arguments supplied by the caller
+     * @return Return a new Loader instance that is ready to start loading
      */
     @Override
-    public void onClick(String weatherForDay) {
-        Context context = this;
+    public Loader<String[]> onCreateLoader(int id, final Bundle loaderArgs) {
 
-        Class destinationClass = DetailsActivity.class;
-        Intent intentToStartDetailActivity = new Intent(context, destinationClass);
-        intentToStartDetailActivity.putExtra(Intent.EXTRA_TEXT, weatherForDay);
-        startActivity(intentToStartDetailActivity);
+        return new AsyncTaskLoader<String[]>(this) {
+
+            // Cache weather data
+            String[] mWeatherData = null;
+
+            /**
+             * Subclasses of AsyncTaskLoader must implement this to take care of loading their data
+             */
+            @Override
+            protected void onStartLoading() {
+                if (mWeatherData != null) {
+                    deliverResult(mWeatherData);
+                } else {
+                    mLoadingIndicator.setVisibility(View.VISIBLE);
+                    forceLoad();
+                }
+            }
+
+            /**
+             * Load and parse JSON data from OpenWeatherMap in background
+             *
+             * @return Weather data from OpenWeatherMap as an array of Strings
+             */
+            @Override
+            public String[] loadInBackground() {
+
+                String locationQuery = AppPreferences
+                        .getPreferredWeatherLocation(MainActivity.this);
+
+                URL weatherRequestUrl = NetworkUtils.buildUrl(locationQuery);
+
+                try {
+                    String jsonWeatherResponse = NetworkUtils
+                            .getResponseFromHttpUrl(weatherRequestUrl);
+
+                    String[] simpleJsonWeatherData = JsonUtils
+                            .getSimpleWeatherStringsFromJson(MainActivity.this, jsonWeatherResponse);
+
+                    return simpleJsonWeatherData;
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return null;
+                }
+            }
+
+            /**
+             * Send result of load to registered listener
+             *
+             * @param data The result of the load
+             */
+            public void deliverResult(String[] data) {
+                mWeatherData = data;
+                super.deliverResult(data);
+            }
+        };
     }
 
     @Override
@@ -84,13 +172,42 @@ public class MainActivity extends AppCompatActivity implements ForecastAdapterOn
         return true;
     }
 
+    /**
+     * Called when a previously created loader is being reset, and thus making its data unavailable
+     * Application should at this point remove any references it has to Loader data
+     *
+     * @param loader The Loader that is being reset
+     */
+    @Override
+    public void onLoaderReset(Loader<String[]> loader) {
+        // Required to Override this to implement LoaderCallbacks<String> interface
+    }
+
+    /**
+     * Called when a previously created loader has finished its load
+     *
+     * @param loader The Loader that has finished
+     * @param data The data generated by the Loader
+     */
+    @Override
+    public void onLoadFinished(Loader<String[]> loader, String[] data) {
+        mLoadingIndicator.setVisibility(View.INVISIBLE);
+        mForecastAdapter.setWeatherData(data);
+
+        if (null == data) {
+            showErrorMessage();
+        } else {
+            showWeatherDataView();
+        }
+    }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
 
         if (id == R.id.action_refresh) {
-            mForecastAdapter.setWeatherData(null);
-            loadWeatherData();
+            invalidateData();
+            LoaderManager.getInstance(this).restartLoader(FORECAST_LOADER_ID, null, this);
 
             return true;
         }
@@ -104,59 +221,8 @@ public class MainActivity extends AppCompatActivity implements ForecastAdapterOn
         return super.onOptionsItemSelected(item);
     }
 
-    public class FetchWeatherTask extends AsyncTask<String, Void, String[]> {
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            mLoadingIndicator.setVisibility(View.VISIBLE);
-        }
-
-        @Override
-        protected String[] doInBackground(String... params) {
-            if (params.length == 0) {
-                return null;
-            }
-
-            String location = params[0];
-            URL weatherRequestUrl = NetworkUtils.buildUrl(location);
-
-            try {
-                String jsonWeatherResponse = NetworkUtils
-                        .getResponseFromHttpUrl(weatherRequestUrl);
-
-                String[] simpleJsonWeatherData = JsonUtils
-                        .getSimpleWeatherStringsFromJson(MainActivity.this, jsonWeatherResponse);
-
-                return simpleJsonWeatherData;
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                return null;
-            }
-        }
-
-        @Override
-        protected void onPostExecute(String[] weatherData) {
-            mLoadingIndicator.setVisibility(View.INVISIBLE);
-
-            if (weatherData != null) {
-                showWeatherDataView();
-                mForecastAdapter.setWeatherData(weatherData);
-            } else {
-                showErrorMessage();
-            }
-        }
-    }
-
-    /**
-     * Get user preferred location for weather via AsyncTask
-     */
-    private void loadWeatherData() {
-        showWeatherDataView();
-
-        String location = AppPreferences.getPreferredWeatherLocation(this);
-
-        new FetchWeatherTask().execute(location);
+    private void invalidateData() {
+        mForecastAdapter.setWeatherData(null);
     }
 
     /**
