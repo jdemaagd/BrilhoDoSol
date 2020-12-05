@@ -5,11 +5,13 @@ import androidx.loader.app.LoaderManager;
 import androidx.loader.app.LoaderManager.LoaderCallbacks;
 import androidx.loader.content.AsyncTaskLoader;
 import androidx.loader.content.Loader;
+import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -27,8 +29,10 @@ import com.jdemaagd.brilhodosol.utils.JsonUtils;
 
 import java.net.URL;
 
-public class MainActivity extends AppCompatActivity
-        implements ForecastAdapterOnClickHandler, LoaderCallbacks<String[]> {
+public class MainActivity extends AppCompatActivity implements
+        ForecastAdapterOnClickHandler,
+        LoaderCallbacks<String[]>,
+        SharedPreferences.OnSharedPreferenceChangeListener {
 
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
 
@@ -38,6 +42,8 @@ public class MainActivity extends AppCompatActivity
     private TextView mErrorMessageDisplay;
 
     private static final int FORECAST_LOADER_ID = 0;
+
+    private static boolean PREFERENCES_HAVE_BEEN_UPDATED = false;
 
     /**
      * Handle RecyclerView item clicks
@@ -95,6 +101,15 @@ public class MainActivity extends AppCompatActivity
 
         // Ensures a loader is initialized and active
         LoaderManager.getInstance(this).initLoader(loaderId, bundleForLoader, callback);
+
+        Log.d(LOG_TAG, "onCreate: registering preference changed listener");
+
+        /*
+         * Register MainActivity as an OnPreferenceChangedListener to receive a callback when a
+         * SharedPreference has changed
+         */
+        PreferenceManager.getDefaultSharedPreferences(this)
+                .registerOnSharedPreferenceChangeListener(this);
     }
 
     /**
@@ -172,6 +187,15 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        // Unregister MainActivity as an OnPreferenceChangedListener to avoid any memory leaks
+        PreferenceManager.getDefaultSharedPreferences(this)
+                .unregisterOnSharedPreferenceChangeListener(this);
+    }
+
     /**
      * Called when a previously created loader is being reset, and thus making its data unavailable
      * Application should at this point remove any references it has to Loader data
@@ -218,7 +242,43 @@ public class MainActivity extends AppCompatActivity
             return true;
         }
 
+        if (id == R.id.action_settings) {
+            Intent startSettingsActivity = new Intent(this, SettingsActivity.class);
+            startActivity(startSettingsActivity);
+
+            return true;
+        }
+
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String s) {
+        /*
+         * Set this flag to true so that when control returns to MainActivity,
+         *      it can refresh the data (i.e. temporary solution)
+         */
+        PREFERENCES_HAVE_BEEN_UPDATED = true;
+    }
+
+    /**
+     * OnStart is called when the Activity is coming into view
+     * This happens when the Activity is first created,
+     *      but also happens when the Activity is returned to from another Activity
+     */
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        /*
+         * If the preferences for location or units have changed since the user was last in
+         * MainActivity, perform another query and set the flag to false (temporary)
+         */
+        if (PREFERENCES_HAVE_BEEN_UPDATED) {
+            Log.d(LOG_TAG, "onStart: preferences were updated");
+            LoaderManager.getInstance(this).restartLoader(FORECAST_LOADER_ID, null, this);
+            PREFERENCES_HAVE_BEEN_UPDATED = false;
+        }
     }
 
     private void invalidateData() {
@@ -231,7 +291,7 @@ public class MainActivity extends AppCompatActivity
      * @see <a"http://developer.android.com/guide/components/intents-common.html#Maps">
      */
     private void openLocationInMap() {
-        String addressString = "343 South Fifth Avenue, Ann Arbor, MI 48104";
+        String addressString = AppPreferences.getPreferredWeatherLocation(this);
         Uri geoLocation = Uri.parse("geo:0,0?q=" + addressString);
 
         Intent intent = new Intent(Intent.ACTION_VIEW);
@@ -240,8 +300,7 @@ public class MainActivity extends AppCompatActivity
         if (intent.resolveActivity(getPackageManager()) != null) {
             startActivity(intent);
         } else {
-            Log.d(LOG_TAG, "Could not call " + geoLocation.toString()
-                    + ", no receiving apps installed!");
+            Log.d(LOG_TAG, "Couldn't call " + geoLocation.toString() + ", no receiving apps installed!");
         }
     }
 

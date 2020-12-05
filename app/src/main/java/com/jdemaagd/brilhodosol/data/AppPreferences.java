@@ -1,6 +1,11 @@
 package com.jdemaagd.brilhodosol.data;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+
+import androidx.preference.PreferenceManager;
+
+import com.jdemaagd.brilhodosol.R;
 
 public class AppPreferences {
 
@@ -19,7 +24,7 @@ public class AppPreferences {
      * Handle setting location details in Preferences
      *
      * @param c        Context used to get the SharedPreferences
-     * @param cityName A human-readable city name, e.g "Mountain View"
+     * @param cityName A human-readable city name, i.e. 'Ann Arbor'
      * @param lat      The latitude of the city
      * @param lon      The longitude of the city
      */
@@ -55,7 +60,12 @@ public class AppPreferences {
      * @return Location The current user has set in SharedPreferences
      */
     public static String getPreferredWeatherLocation(Context context) {
-        return getDefaultWeatherLocation();
+        SharedPreferences prefs = PreferenceManager
+                .getDefaultSharedPreferences(context);
+        String keyForLocation = context.getString(R.string.pref_location_key);
+        String defaultLocation = context.getString(R.string.pref_location_default);
+
+        return prefs.getString(keyForLocation, defaultLocation);
     }
 
     /**
@@ -65,7 +75,23 @@ public class AppPreferences {
      * @return true If metric display should be used
      */
     public static boolean isMetric(Context context) {
-        return true;
+        SharedPreferences prefs = PreferenceManager
+                .getDefaultSharedPreferences(context);
+
+        String keyForUnits = context.getString(R.string.pref_units_key);
+        String defaultUnits = context.getString(R.string.pref_units_metric);
+        String preferredUnits = prefs.getString(keyForUnits, defaultUnits);
+        String metric = context.getString(R.string.pref_units_metric);
+
+        boolean userPrefersMetric;
+
+        if (metric.equals(preferredUnits)) {
+            userPrefersMetric = true;
+        } else {
+            userPrefersMetric = false;
+        }
+
+        return userPrefersMetric;
     }
 
     /**
