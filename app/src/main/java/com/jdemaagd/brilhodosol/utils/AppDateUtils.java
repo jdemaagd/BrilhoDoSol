@@ -28,42 +28,6 @@ public final class AppDateUtils {
     }
 
     /**
-     * Normalize all dates that go into database to start of day in UTC time
-     *
-     * @param date The UTC date to normalize
-     * @return The UTC date at 12 midnight
-     */
-    public static long normalizeDate(long date) {
-        return date / DAY_IN_MILLIS * DAY_IN_MILLIS;
-    }
-
-    /**
-     * Convert given date (in UTC timezone) to date in local timezone
-     *
-     * @param utcDate The UTC datetime to convert to a local datetime, in milliseconds
-     * @return The local date (the UTC datetime - the TimeZone offset) in milliseconds
-     */
-    public static long getLocalDateFromUTC(long utcDate) {
-        TimeZone tz = TimeZone.getDefault();
-        long gmtOffset = tz.getOffset(utcDate);
-
-        return utcDate - gmtOffset;
-    }
-
-    /**
-     * Convert local date to date in UTC time
-     *
-     * @param localDate The local datetime to convert to a UTC datetime, in milliseconds
-     * @return The UTC date (the local datetime + the TimeZone offset) in milliseconds
-     */
-    public static long getUTCDateFromLocal(long localDate) {
-        TimeZone tz = TimeZone.getDefault();
-        long gmtOffset = tz.getOffset(localDate);
-
-        return localDate + gmtOffset;
-    }
-
-    /**
      * Convert database representation of date into something to display to users
      * <p/>
      * For today: "Today, June 8"
@@ -116,19 +80,57 @@ public final class AppDateUtils {
     }
 
     /**
-     * Returns a date string in the format specified, which shows a date, without a year,
-     * abbreviated, showing the full weekday
+     * Convert given date (in UTC timezone) to date in local timezone
      *
-     * @param context      Used by DateUtils to formate the date in the current locale
-     * @param timeInMillis Time in milliseconds since the epoch (local time)
-     * @return The formatted date string
+     * @param utcDate The UTC datetime to convert to a local datetime, in milliseconds
+     * @return The local date (the UTC datetime - the TimeZone offset) in milliseconds
      */
-    private static String getReadableDateString(Context context, long timeInMillis) {
-        int flags = DateUtils.FORMAT_SHOW_DATE
-                | DateUtils.FORMAT_NO_YEAR
-                | DateUtils.FORMAT_SHOW_WEEKDAY;
+    public static long getLocalDateFromUTC(long utcDate) {
+        TimeZone tz = TimeZone.getDefault();
+        long gmtOffset = tz.getOffset(utcDate);
 
-        return DateUtils.formatDateTime(context, timeInMillis, flags);
+        return utcDate - gmtOffset;
+    }
+
+    /**
+     * Convert local date to date in UTC time
+     *
+     * @param localDate The local datetime to convert to a UTC datetime, in milliseconds
+     * @return The UTC date (the local datetime + the TimeZone offset) in milliseconds
+     */
+    public static long getUTCDateFromLocal(long localDate) {
+        TimeZone tz = TimeZone.getDefault();
+        long gmtOffset = tz.getOffset(localDate);
+
+        return localDate + gmtOffset;
+    }
+
+    /**
+     * In order to ensure consistent inserts into WeatherProvider, we check that dates have been
+     * normalized before they are inserted. If they are not normalized, we don't want to accept
+     * them, and leave it up to the caller to throw an IllegalArgumentException.
+     *
+     * @param millisSinceEpoch Milliseconds since January 1, 1970 at midnight
+     *
+     * @return true if the date represents the beginning of a day in Unix time, false otherwise
+     */
+    public static boolean isDateNormalized(long millisSinceEpoch) {
+        boolean isDateNormalized = false;
+        if (millisSinceEpoch % DAY_IN_MILLIS == 0) {
+            isDateNormalized = true;
+        }
+
+        return isDateNormalized;
+    }
+
+    /**
+     * Normalize all dates that go into database to start of day in UTC time
+     *
+     * @param date The UTC date to normalize
+     * @return The UTC date at 12 midnight
+     */
+    public static long normalizeDate(long date) {
+        return date / DAY_IN_MILLIS * DAY_IN_MILLIS;
     }
 
     /**
@@ -159,5 +161,21 @@ public final class AppDateUtils {
 
             return dayFormat.format(dateInMillis);
         }
+    }
+
+    /**
+     * Returns a date string in the format specified, which shows a date, without a year,
+     * abbreviated, showing the full weekday
+     *
+     * @param context      Used by DateUtils to formate the date in the current locale
+     * @param timeInMillis Time in milliseconds since the epoch (local time)
+     * @return The formatted date string
+     */
+    private static String getReadableDateString(Context context, long timeInMillis) {
+        int flags = DateUtils.FORMAT_SHOW_DATE
+                | DateUtils.FORMAT_NO_YEAR
+                | DateUtils.FORMAT_SHOW_WEEKDAY;
+
+        return DateUtils.formatDateTime(context, timeInMillis, flags);
     }
 }
