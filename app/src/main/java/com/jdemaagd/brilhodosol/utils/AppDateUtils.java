@@ -7,6 +7,7 @@ import com.jdemaagd.brilhodosol.R;
 
 import java.text.SimpleDateFormat;
 import java.util.TimeZone;
+import java.util.concurrent.TimeUnit;
 
 public final class AppDateUtils {
 
@@ -90,6 +91,62 @@ public final class AppDateUtils {
         long gmtOffset = tz.getOffset(utcDate);
 
         return utcDate - gmtOffset;
+    }
+
+    /**
+     * Returns milliseconds (UTC time) for today at midnight in local time zone
+     * i.e., in California on September 20th, 2016 at 6:30 PM will return 1474329600000
+     * Epoch converter gives time stamp at 8:00 PM on September 19th local time
+     * But in GMT, September 20th, 2016 at midnight is correct
+     *
+     * i.e., in Hong Kong on September 20th, 2016 at 6:30 PM will return 1474329600000
+     * An Epoch time converter will not get midnight for your local time zone
+     * Keep in mind looking at GMT date
+     *
+     * ALWAYS returns date at midnight (in GMT time) for time zone you are currently in
+     * GMT date will always represent your date
+     *
+     * Since UTC / GMT time are standard for all time zones in the world,
+     * use it to normalize dates that are stored in database
+     * Adjust for current time zone using time zone offsets when getting from database
+     *
+     * @return milliseconds (UTC / GMT) for today at midnight in local time zone
+     */
+    public static long getNormalizedUtcDateForToday() {
+        /*
+         * Milliseconds that have elapsed since January 1st, 1970 at midnight in GMT time zone
+         */
+        long utcNowMillis = System.currentTimeMillis();
+
+        /*
+         * TimeZone represents device current time zone
+         * Way to acquire offset for local time from a UTC time stamp
+         */
+        TimeZone currentTimeZone = TimeZone.getDefault();
+
+        /*
+         * getOffset returns ms to add to UTC to get elapsed time since epoch for current time zone
+         * Pass current UTC time to account for daylight savings time
+         */
+        long gmtOffsetMillis = currentTimeZone.getOffset(utcNowMillis);
+
+        /*
+         * Number of milliseconds since January 1, 1970 (GMT)
+         * UTC time is measured in milliseconds from January 1, 1970 at midnight from GMT time zone
+         * Depending time zone, time since January 1, 1970 at midnight (GMT) will be greater or smaller
+         */
+        long timeSinceEpochLocalTimeMillis = utcNowMillis + gmtOffsetMillis;
+
+        // Convert milliseconds to days disregarding fractional days
+        long daysSinceEpochLocal = TimeUnit.MILLISECONDS.toDays(timeSinceEpochLocalTimeMillis);
+
+        /*
+         * Convert back to milliseconds, time stamp for today at midnight in GMT
+         * Need to account for local time zone offsets when extracting this info from database
+         */
+        long normalizedUtcMidnightMillis = TimeUnit.DAYS.toMillis(daysSinceEpochLocal);
+
+        return normalizedUtcMidnightMillis;
     }
 
     /**

@@ -21,36 +21,69 @@ public class AppPreferences {
             "343 South Fifth Avenue, Ann Arbor, MI 48104";
 
     /**
-     * Handle setting location details in Preferences
+     * Get user notifications preference
      *
-     * @param c        Context used to get the SharedPreferences
-     * @param cityName A human-readable city name, i.e. 'Ann Arbor'
-     * @param lat      The latitude of the city
-     * @param lon      The longitude of the city
+     * @param context Used to access SharedPreferences
+     * @return true if user prefers to see notifications
      */
-    static public void setLocationDetails(Context c, String cityName, double lat, double lon) {
+    public static boolean areNotificationsEnabled(Context context) {
+        String displayNotificationsKey = context.getString(R.string.pref_enable_notifications_key);
 
+        boolean shouldDisplayNotificationsByDefault = context
+                .getResources()
+                .getBoolean(R.bool.show_notifications_by_default);
+
+        SharedPreferences prefs = android.preference.PreferenceManager.getDefaultSharedPreferences(context);
+
+        boolean shouldDisplayNotifications = prefs
+                .getBoolean(displayNotificationsKey, shouldDisplayNotificationsByDefault);
+
+        return shouldDisplayNotifications;
+    }
+
+    public static double[] getDefaultWeatherCoordinates() {
+        return DEFAULT_WEATHER_COORDINATES;
     }
 
     /**
-     * Handle setting a new location in preferences
+     * Returns elapsed time in milliseconds since last notification was shown
      *
-     * @param c               Context used to get the SharedPreferences
-     * @param locationSetting The location string used to request updates from the server.
-     * @param lat             The latitude of the city
-     * @param lon             The longitude of the city
+     * @param context Used to access SharedPreferences as well as use other utility methods
+     * @return Elapsed time in milliseconds since the last notification was shown
      */
-    static public void setLocation(Context c, String locationSetting, double lat, double lon) {
+    public static long getElapsedTimeSinceLastNotification(Context context) {
+        long lastNotificationTimeMillis =
+                AppPreferences.getLastNotificationTimeInMillis(context);
+        long timeSinceLastNotification = System.currentTimeMillis() - lastNotificationTimeMillis;
 
+        return timeSinceLastNotification;
     }
 
     /**
-     * Resets the stored location coordinates
+     * Returns the last time that a notification was shown (in UNIX time)
      *
-     * @param c Context used to get the SharedPreferences
+     * @param context Used to access SharedPreferences
+     * @return UNIX time of when the last notification was shown
      */
-    static public void resetLocationCoordinates(Context c) {
+    public static long getLastNotificationTimeInMillis(Context context) {
+        String lastNotificationKey = context.getString(R.string.pref_last_notification);
 
+        SharedPreferences prefs = android.preference.PreferenceManager.getDefaultSharedPreferences(context);
+        long lastNotificationTime = prefs.getLong(lastNotificationKey, 0);
+
+        return lastNotificationTime;
+    }
+
+    /**
+     * Returns location coordinates associated with location
+     * Note: coordinates may not be set, which results in (0,0) being returned
+     * (0,0) is in middle of ocean off west coast of Africa
+     *
+     * @param context Used to get the SharedPreferences
+     * @return An array containing the two coordinate values
+     */
+    public static double[] getLocationCoordinates(Context context) {
+        return getDefaultWeatherCoordinates();
     }
 
     /**
@@ -66,6 +99,16 @@ public class AppPreferences {
         String defaultLocation = context.getString(R.string.pref_location_default);
 
         return prefs.getString(keyForLocation, defaultLocation);
+    }
+
+    /**
+     * Returns true if latitude/longitude values are available
+     *
+     * @param context used to get the SharedPreferences
+     * @return true if lat/long are set
+     */
+    public static boolean isLocationLatLonAvailable(Context context) {
+        return false;
     }
 
     /**
@@ -95,32 +138,46 @@ public class AppPreferences {
     }
 
     /**
-     * Returns location coordinates associated with location
-     * Note: coordinates may not be set, which results in (0,0) being returned
-     * (0,0) is in middle of ocean off west coast of Africa
+     * Resets stored location coordinates
      *
-     * @param context Used to get the SharedPreferences
-     * @return An array containing the two coordinate values
+     * @param context Context used to get the SharedPreferences
      */
-    public static double[] getLocationCoordinates(Context context) {
-        return getDefaultWeatherCoordinates();
+    public static void resetLocationCoordinates(Context context) {
+        SharedPreferences sp = android.preference.PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor editor = sp.edit();
+
+        editor.remove(PREF_COORD_LAT);
+        editor.remove(PREF_COORD_LONG);
+        editor.apply();
     }
 
     /**
-     * Returns true if latitude/longitude values are available
+     * Saves time that notification is shown
      *
-     * @param context used to get the SharedPreferences
-     * @return true if lat/long are set
+     * @param context Used to access SharedPreferences
+     * @param timeOfNotification Time of last notification to save (in UNIX time)
      */
-    public static boolean isLocationLatLonAvailable(Context context) {
-        return false;
+    public static void saveLastNotificationTime(Context context, long timeOfNotification) {
+        SharedPreferences sp = android.preference.PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor editor = sp.edit();
+        String lastNotificationKey = context.getString(R.string.pref_last_notification);
+        editor.putLong(lastNotificationKey, timeOfNotification);
+        editor.apply();
     }
 
-    private static String getDefaultWeatherLocation() {
-        return DEFAULT_WEATHER_LOCATION;
-    }
+    /**
+     * Handle setting location details in Preferences
+     *
+     * @param context  Context used to get the SharedPreferences
+     * @param lat      the latitude of the city
+     * @param lon      the longitude of the city
+     */
+    public static void setLocationDetails(Context context, double lat, double lon) {
+        SharedPreferences sp = android.preference.PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor editor = sp.edit();
 
-    public static double[] getDefaultWeatherCoordinates() {
-        return DEFAULT_WEATHER_COORDINATES;
+        editor.putLong(PREF_COORD_LAT, Double.doubleToRawLongBits(lat));
+        editor.putLong(PREF_COORD_LONG, Double.doubleToRawLongBits(lon));
+        editor.apply();
     }
 }
