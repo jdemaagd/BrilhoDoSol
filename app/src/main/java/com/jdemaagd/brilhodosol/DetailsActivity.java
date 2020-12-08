@@ -10,12 +10,14 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ShareCompat;
+import androidx.databinding.DataBindingUtil;
 import androidx.loader.app.LoaderManager;
 import androidx.loader.app.LoaderManager.LoaderCallbacks;
 import androidx.loader.content.CursorLoader;
 import androidx.loader.content.Loader;
 
 import com.jdemaagd.brilhodosol.data.WeatherContract.WeatherEntry;
+import com.jdemaagd.brilhodosol.databinding.ActivityDetailsBinding;
 import com.jdemaagd.brilhodosol.utils.AppDateUtils;
 import com.jdemaagd.brilhodosol.utils.WeatherUtils;
 
@@ -49,29 +51,14 @@ public class DetailsActivity extends AppCompatActivity implements LoaderCallback
 
     private Uri mUri;
 
-    private TextView mDateView;
-    private TextView mDescriptionView;
-    private TextView mHighTemperatureView;
-    private TextView mLowTemperatureView;
-    private TextView mHumidityView;
-    private TextView mWindView;
-    private TextView mPressureView;
+    private ActivityDetailsBinding mDetailBinding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_details);
-
-        mDateView = findViewById(R.id.tv_date);
-        mDescriptionView = findViewById(R.id.tv_weather_description);
-        mHighTemperatureView = findViewById(R.id.tv_high_temp);
-        mLowTemperatureView = findViewById(R.id.tv_low_temp);
-        mHumidityView = findViewById(R.id.tv_humidity);
-        mWindView = findViewById(R.id.tv_wind);
-        mPressureView = findViewById(R.id.tv_pressure);
+        mDetailBinding = DataBindingUtil.setContentView(this, R.layout.activity_details);
 
         mUri = getIntent().getData();
-
         if (mUri == null)
             throw new NullPointerException("URI for DetailActivity cannot be null");
 
@@ -165,38 +152,61 @@ public class DetailsActivity extends AppCompatActivity implements LoaderCallback
          * have any data to bind, we just return from this method.
          */
         boolean cursorHasValidData = false;
-        if (data != null && data.moveToFirst()) cursorHasValidData = true;
+        if (data != null && data.moveToFirst()) {
+            cursorHasValidData = true;
+        }
 
-        if (!cursorHasValidData) return;
+        if (!cursorHasValidData) {
+            return;
+        }
+
+        int weatherId = data.getInt(INDEX_WEATHER_CONDITION_ID);
+        int weatherImageId = WeatherUtils.getLargeArtResourceIdForWeatherCondition(weatherId);
+        mDetailBinding.primaryInfo.ivWeatherIcon.setImageResource(weatherImageId);
 
         long localDateMidnightGmt = data.getLong(INDEX_WEATHER_DATE);
         String dateText = AppDateUtils.getFriendlyDateString(this, localDateMidnightGmt, true);
-        mDateView.setText(dateText);
+        mDetailBinding.primaryInfo.tvDate.setText(dateText);
 
-        int weatherId = data.getInt(INDEX_WEATHER_CONDITION_ID);
         String description = WeatherUtils.getStringForWeatherCondition(this, weatherId);
-        mDescriptionView.setText(description);
+        String descriptionA11y = getString(R.string.a11y_forecast, description);
+        mDetailBinding.primaryInfo.tvWeatherDesc.setText(description);
+        mDetailBinding.primaryInfo.tvWeatherDesc.setContentDescription(descriptionA11y);
+        mDetailBinding.primaryInfo.ivWeatherIcon.setContentDescription(descriptionA11y);
 
         double highInCelsius = data.getDouble(INDEX_WEATHER_MAX_TEMP);
         String highString = WeatherUtils.formatTemperature(this, highInCelsius);
-        mHighTemperatureView.setText(highString);
+        String highA11y = getString(R.string.a11y_high_temp, highString);
+        mDetailBinding.primaryInfo.tvHighTemp.setText(highString);
+        mDetailBinding.primaryInfo.tvHighTemp.setContentDescription(highA11y);
 
         double lowInCelsius = data.getDouble(INDEX_WEATHER_MIN_TEMP);
         String lowString = WeatherUtils.formatTemperature(this, lowInCelsius);
-        mLowTemperatureView.setText(lowString);
+        String lowA11y = getString(R.string.a11y_low_temp, lowString);
+        mDetailBinding.primaryInfo.tvLowTemp.setText(lowString);
+        mDetailBinding.primaryInfo.tvLowTemp.setContentDescription(lowA11y);
 
         float humidity = data.getFloat(INDEX_WEATHER_HUMIDITY);
         String humidityString = getString(R.string.format_humidity, humidity);
-        mHumidityView.setText(humidityString);
+        String humidityA11y = getString(R.string.a11y_humidity, humidityString);
+        mDetailBinding.extraDetails.tvHumidity.setText(humidityString);
+        mDetailBinding.extraDetails.tvHumidity.setContentDescription(humidityA11y);
+        mDetailBinding.extraDetails.tvHumidityLabel.setContentDescription(humidityA11y);
 
         float windSpeed = data.getFloat(INDEX_WEATHER_WIND_SPEED);
         float windDirection = data.getFloat(INDEX_WEATHER_DEGREES);
         String windString = WeatherUtils.getFormattedWind(this, windSpeed, windDirection);
-        mWindView.setText(windString);
+        String windA11y = getString(R.string.a11y_wind, windString);
+        mDetailBinding.extraDetails.tvWindMeasurement.setText(windString);
+        mDetailBinding.extraDetails.tvWindMeasurement.setContentDescription(windA11y);
+        mDetailBinding.extraDetails.tvWindLabel.setContentDescription(windA11y);
 
         float pressure = data.getFloat(INDEX_WEATHER_PRESSURE);
         String pressureString = getString(R.string.format_pressure, pressure);
-        mPressureView.setText(pressureString);
+        String pressureA11y = getString(R.string.a11y_pressure, pressureString);
+        mDetailBinding.extraDetails.tvPressure.setText(pressureString);
+        mDetailBinding.extraDetails.tvPressure.setContentDescription(pressureA11y);
+        mDetailBinding.extraDetails.tvPressureLabel.setContentDescription(pressureA11y);
 
         mForecastSummary = String.format("%s - %s - %s/%s",
                 dateText, description, highString, lowString);
