@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/cl_extra_details"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingStart="32dp"
+        android:paddingLeft="32dp"
+        android:paddingTop="16dp"
+        android:paddingEnd="32dp"
+        android:paddingRight="32dp"
+        android:paddingBottom="16dp">
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/horizontal_middle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_percent="0.5" />
+
+        <TextView
+            android:id="@+id/tv_humidity_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/humidity_label"
+            app:layout_constraintBottom_toTopOf="@+id/tv_pressure_label"
+            app:layout_constraintLeft_toLeftOf="@+id/cl_extra_details"
+            app:layout_constraintTop_toTopOf="@+id/cl_extra_details"
+            app:layout_constraintVertical_bias="0.33" />
+
+        <TextView
+            android:id="@+id/tv_humidity"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="@+id/tv_humidity_label"
+            app:layout_constraintLeft_toLeftOf="@+id/horizontal_middle"
+            tools:text="38%" />
+
+        <TextView
+            android:id="@+id/tv_pressure_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/pressure_label"
+            app:layout_constraintBottom_toBottomOf="@+id/cl_extra_details"
+            app:layout_constraintLeft_toLeftOf="@+id/cl_extra_details"
+            app:layout_constraintTop_toTopOf="@+id/cl_extra_details" />
+
+        <TextView
+            android:id="@+id/tv_pressure"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="@+id/tv_pressure_label"
+            app:layout_constraintLeft_toLeftOf="@+id/horizontal_middle"
+            tools:text="995 hPa" />
+
+        <TextView
+            android:id="@+id/tv_wind_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/wind_label"
+            app:layout_constraintBottom_toBottomOf="@+id/extra_details"
+            app:layout_constraintLeft_toLeftOf="@+id/extra_details"
+            app:layout_constraintTop_toBottomOf="@+id/tv_pressure_label"
+            app:layout_constraintVertical_bias="0.65999997" />
+
+        <TextView
+            android:id="@+id/tv_wind_measurement"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="@+id/tv_wind_label"
+            app:layout_constraintLeft_toLeftOf="@+id/horizontal_middle"
+            tools:text="4km/h NW" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</layout>

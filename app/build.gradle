@@ -18,7 +18,9 @@ android {
         buildConfigField("String", "OWM_API_KEY", OWM_API_KEY)
         buildConfigField("String", "OWM_BASE_URL", OWM_BASE_URL)
     }
-
+    buildFeatures {
+        dataBinding true
+    }
     buildTypes {
         release {
             minifyEnabled false
