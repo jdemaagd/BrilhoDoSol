@@ -1,6 +1,5 @@
 package com.jdemaagd.brilhodosol;
 
-import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
@@ -23,6 +22,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.jdemaagd.brilhodosol.ForecastAdapter.ForecastAdapterOnClickHandler;
 import com.jdemaagd.brilhodosol.data.AppPreferences;
 import com.jdemaagd.brilhodosol.data.WeatherContract.WeatherEntry;
+import com.jdemaagd.brilhodosol.sync.BrilhodoSolSyncUtils;
 import com.jdemaagd.brilhodosol.utils.FakeDataUtils;
 
 public class MainActivity extends AppCompatActivity implements
@@ -78,8 +78,6 @@ public class MainActivity extends AppCompatActivity implements
 
         getSupportActionBar().setElevation(0f);
 
-        FakeDataUtils.insertFakeData(this);
-
         mRecyclerView = findViewById(R.id.rv_forecast);
         mLoadingIndicator = findViewById(R.id.pb_loading_indicator);
 
@@ -99,6 +97,8 @@ public class MainActivity extends AppCompatActivity implements
         showLoading();
 
         LoaderManager.getInstance(this).initLoader(FORECAST_LOADER_ID, null, this);
+
+        BrilhodoSolSyncUtils.initialize(this);
     }
 
     /**
