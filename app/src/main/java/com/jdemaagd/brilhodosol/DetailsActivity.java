@@ -6,7 +6,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ShareCompat;
@@ -23,7 +22,7 @@ import com.jdemaagd.brilhodosol.utils.WeatherUtils;
 
 public class DetailsActivity extends AppCompatActivity implements LoaderCallbacks<Cursor> {
 
-    private static final String FORECAST_SHARE_HASHTAG = " #SunshineApp";
+    private static final String FORECAST_SHARE_HASHTAG = " #SBrilhoDoSol";
 
     public static final String[] WEATHER_DETAIL_PROJECTION = {
             WeatherEntry.COLUMN_DATE,

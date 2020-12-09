@@ -116,15 +116,7 @@ public final class NetworkUtils {
     }
 
     /**
-     * Retrieves the proper URL to query for the weather data. The reason for both this method as
-     * well as {@link #buildUrlWithLocationQuery(String)} is two fold.
-     * <p>
-     * 1) You should be able to just use one method when you need to create the URL within the
-     * app instead of calling both methods.
-     * 2) Later in Sunshine, you are going to add an alternate method of allowing the user
-     * to select their preferred location. Once you do so, there will be another way to form
-     * the URL using a latitude and longitude rather than just a location String. This method
-     * will "decide" which URL to build and return it.
+     * Return built URL
      *
      * @param context used to access other Utility methods
      * @return URL to query weather service
