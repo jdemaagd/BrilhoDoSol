@@ -45,12 +45,6 @@ public class WeatherProvider extends ContentProvider {
         final UriMatcher matcher = new UriMatcher(UriMatcher.NO_MATCH);
         final String authority = WeatherContract.CONTENT_AUTHORITY;
 
-        /*
-         * For each type of URI you want to add, create a corresponding code. Preferably, these are
-         * constant fields in your class so that you can use them throughout the class and you no
-         * they aren't going to change. In Sunshine, we use CODE_WEATHER or CODE_WEATHER_WITH_DATE.
-         */
-
         /* This URI is content://com.jdemaagd.brilhodosol/weather/ */
         matcher.addURI(authority, WeatherContract.PATH_WEATHER, CODE_WEATHER);
 
@@ -92,17 +86,13 @@ public class WeatherProvider extends ContentProvider {
     }
 
     /**
-     * Handles requests to insert a set of new rows. In Sunshine, we are only going to be
-     * inserting multiple rows of data at a time from a weather forecast. There is no use case
-     * for inserting a single row of data into our ContentProvider, and so we are only going to
-     * implement bulkInsert. In a normal ContentProvider's implementation, you will probably want
-     * to provide proper functionality for the insert method as well.
+     * Handle bulk insert of weather forecast into ContentProvider
      *
-     * @param uri    The content:// URI of the insertion request.
-     * @param values An array of sets of column_name/value pairs to add to the database.
-     *               This must not be {@code null}.
+     * @param uri    The content:// URI of the insertion request
+     * @param values An array of sets of column_name/value pairs to add to the database
+     *               This must not be {@code null}
      *
-     * @return The number of values that were inserted.
+     * @return The number of values that were inserted
      */
     @Override
     public int bulkInsert(@NonNull Uri uri, @NonNull ContentValues[] values) {
@@ -140,8 +130,7 @@ public class WeatherProvider extends ContentProvider {
     }
 
     /**
-     * Handles query requests from clients. We will use this method in Sunshine to query for all
-     * of our weather data as well as to query for the weather on a particular day.
+     * Query for weather
      *
      * @param uri           The URI to query
      * @param projection    The list of columns to put into the cursor. If null, all columns are
@@ -165,7 +154,7 @@ public class WeatherProvider extends ContentProvider {
             /*
              * When sUriMatcher's match method is called with a URI that looks something like this
              *
-             *      content://com.jdemaagd.brihlodosol.sunshine/weather/1472214172
+             *      content://com.jdemaagd.brihlodosol/weather/1472214172
              *
              * sUriMatcher's match method will return the code that indicates to us that we need
              * to return the weather for a particular date. The date in this code is encoded in
@@ -305,7 +294,7 @@ public class WeatherProvider extends ContentProvider {
 
     @Override
     public int update(@NonNull Uri uri, ContentValues values, String selection, String[] selectionArgs) {
-        throw new RuntimeException("We are not implementing update in Sunshine");
+        throw new RuntimeException("We are not implementing update in Brilho do Sol");
     }
 
     /**

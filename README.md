@@ -1,4 +1,4 @@
-# Weather App
+# Brilho do Sol (Sunshine)
 
 ## Open Weather Map API
 
