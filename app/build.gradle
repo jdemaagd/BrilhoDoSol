@@ -3,15 +3,15 @@ plugins {
 }
 
 android {
-    compileSdkVersion 30
-    buildToolsVersion "30.0.2"
+    compileSdkVersion rootProject.ext.compiledSdkVersion
+    buildToolsVersion rootProject.ext.buildToolsVersion
 
     defaultConfig {
         applicationId "com.jdemaagd.brilhodosol"
-        minSdkVersion 22
-        targetSdkVersion 30
-        versionCode 1
-        versionName "1.0"
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        versionCode rootProject.ext.versionCode
+        versionName rootProject.ext.versionName
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
@@ -35,15 +35,20 @@ android {
 
 dependencies {
 
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.2'
+    androidTestImplementation "androidx.test.espresso:espresso-core:$rootProject.ext.espressoVersion"
+    androidTestImplementation "androidx.test.espresso:espresso-intents:$rootProject.ext.espressoVersion"
+    androidTestImplementation "androidx.test.ext:junit:$rootProject.ext.androidxJunitVersion"
+    androidTestImplementation "androidx.test:runner:$rootProject.ext.testRunnerVersion"
+    androidTestImplementation "androidx.test:rules:$rootProject.ext.testRunnerVersion"
+    androidTestImplementation "androidx.test.uiautomator:uiautomator:$rootProject.ext.androidxUIAutomatorVersion"
+    androidTestImplementation "org.hamcrest:hamcrest-library:$rootProject.ext.hamcrestVersion"
 
-    implementation 'androidx.appcompat:appcompat:1.2.0'
-    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
-    implementation "androidx.preference:preference:1.1.1"
-    implementation 'com.firebase:firebase-jobdispatcher:0.8.6'
-    implementation 'com.google.android.material:material:1.2.1'
+    implementation "androidx.appcompat:appcompat:$rootProject.ext.appCompatVersion"
+    implementation "androidx.constraintlayout:constraintlayout:$rootProject.ext.constraintLayoutVersion"
+    implementation "androidx.core:core:$rootProject.ext.androidxCoreVersion"
+    implementation "androidx.preference:preference:$rootProject.ext.androidxPreferenceVersion"
+    implementation "com.firebase:firebase-jobdispatcher:$rootProject.ext.firebaseJobDispatcherVersion"
+    implementation "com.google.android.material:material:$rootProject.ext.materialDesignVersion"
 
-    testImplementation 'junit:junit:4.+'
-    
+    testImplementation "junit:junit:$rootProject.ext.junitVersion"
 }
